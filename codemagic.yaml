@@ -1,0 +1,47 @@
+workflows:
+  ios-testflight:
+    name: iOS TestFlight Build
+    max_build_duration: 60
+    environment:
+      ios_signing:
+        distribution_type: app-store
+        bundle_identifier: com.pcs.PhotoMailApp
+        apple_signin:
+          app_store_connect_api_key: asc_api_key
+      vars:
+        XCODE_SCHEME: PhotoMailApp
+        XCODE_PROJECT: PhotoMailApp.xcodeproj
+    scripts:
+      - name: Install XcodeGen
+        script: |
+          brew update
+          brew install xcodegen
+      - name: Generate Xcode project
+        script: |
+          xcodegen generate
+      - name: Build archive
+        script: |
+          xcodebuild -project "$XCODE_PROJECT"                      -scheme "$XCODE_SCHEME"                      -configuration Release                      -sdk iphoneos                      -archivePath "$CM_BUILD_DIR/$XCODE_SCHEME.xcarchive"                      clean archive | xcpretty
+      - name: Export IPA for App Store
+        script: |
+          xcodebuild -exportArchive                      -archivePath "$CM_BUILD_DIR/$XCODE_SCHEME.xcarchive"                      -exportOptionsPlist <(cat << 'EOF'
+          {
+            "method": "app-store",
+            "uploadBitcode": false,
+            "compileBitcode": false,
+            "manageAppVersionAndBuildNumber": true
+          }
+          EOF
+          )           -exportPath "$CM_BUILD_DIR/Export" | xcpretty
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        beta_groups:
+          - Internal Testers
+      email:
+        recipients:
+          - you@yourcompany.com
+        notify:
+          success: true
+          failure: true

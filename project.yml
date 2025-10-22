@@ -1,0 +1,36 @@
+name: PhotoMailApp
+options:
+  deploymentTarget:
+    iOS: "15.0"
+  xcodeVersion: "14.0"
+configs:
+  Debug: debug
+  Release: release
+settings:
+  base:
+    PRODUCT_BUNDLE_IDENTIFIER: com.pcs.PhotoMailApp
+    DEVELOPMENT_TEAM: ""
+    SWIFT_VERSION: "5.0"
+targets:
+  PhotoMailApp:
+    type: application
+    platform: iOS
+    sources:
+      - path: PhotoMailApp
+        excludes:
+          - "**/*.md"
+    resources:
+      - path: PhotoMailApp/Assets.xcassets
+    settings:
+      base:
+        INFOPLIST_FILE: PhotoMailApp/Info.plist
+        IPHONEOS_DEPLOYMENT_TARGET: "15.0"
+        CODE_SIGN_STYLE: Automatic
+        TARGETED_DEVICE_FAMILY: "1" # iPhone only; set "1,2" for iPhone+iPad
+schemes:
+  PhotoMailApp:
+    build:
+      targets:
+        PhotoMailApp: all
+    run:
+      config: Debug
