@@ -1,11 +1,14 @@
 import SwiftUI
 import MessageUI
+import UIKit
 
 struct ContentView: View {
     @State private var image: UIImage?
-    @State private var showCamera = false
+    @State private var showImagePicker = false
+    @State private var imagePickerSource: UIImagePickerController.SourceType = .camera
     @State private var showMail = false
     @State private var mailUnavailableAlert = false
+    @State private var imageSourceUnavailableAlert = false
 
     private let defaultRecipients = ["shipments@yourcompany.com"]
     private let defaultSubject = "Outbound shipment photo"
@@ -29,7 +32,15 @@ struct ContentView: View {
                 }
                 HStack {
                     Button {
-                        showCamera = true
+                        if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                            imagePickerSource = .camera
+                            showImagePicker = true
+                        } else if UIImagePickerController.isSourceTypeAvailable(.photoLibrary) {
+                            imagePickerSource = .photoLibrary
+                            showImagePicker = true
+                        } else {
+                            imageSourceUnavailableAlert = true
+                        }
                     } label: {
                         Label("Take Photo", systemImage: "camera.fill")
                     }
@@ -53,8 +64,8 @@ struct ContentView: View {
             .padding()
             .navigationTitle("Photo → Email")
         }
-        .sheet(isPresented: $showCamera) {
-            ImagePicker(sourceType: .camera) { picked in
+        .sheet(isPresented: $showImagePicker) {
+            ImagePicker(sourceType: imagePickerSource) { picked in
                 image = picked
             }
         }
@@ -75,13 +86,22 @@ struct ContentView: View {
         } message: {
             Text("This device isn't configured to send email. Configure Mail or use a mailto: link.")
         }
+        .alert("No photo source available", isPresented: $imageSourceUnavailableAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("This device doesn't have a camera or photo library available.")
+        }
     }
 }
 
+#if swift(>=5.9)
+#Preview {
+    ContentView()
+}
+#else
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
     }
-#Preview {
-    ContentView()
 }
+#endif
