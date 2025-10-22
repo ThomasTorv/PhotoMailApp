@@ -1,5 +1,6 @@
 import SwiftUI
 import MessageUI
+import UIKit
 
 struct ContentView: View {
     @State private var image: UIImage?
@@ -77,3 +78,15 @@ struct ContentView: View {
         }
     }
 }
+
+#if swift(>=5.9)
+#Preview {
+    ContentView()
+}
+#else
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
+}
+#endif
