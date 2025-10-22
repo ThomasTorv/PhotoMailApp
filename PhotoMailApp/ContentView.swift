@@ -3,6 +3,7 @@ import MessageUI
 import UIKit
 
 struct ContentView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @State private var image: UIImage?
     @State private var showImagePicker = false
     @State private var imagePickerSource: UIImagePickerController.SourceType = .camera
@@ -10,12 +11,15 @@ struct ContentView: View {
     @State private var showMail = false
     @State private var mailUnavailableAlert = false
     @State private var imageSourceUnavailableAlert = false
+    @State private var availableSources: [ImageSourceOption] = ImageSourceOption.currentlyAvailable()
 
     private let defaultRecipients = ["shipments@yourcompany.com"]
     private let defaultSubject = "Outbound shipment photo"
     private let defaultBody = "Photo attached."
 
     var body: some View {
+        let sources = availableSources
+
         NavigationView {
             VStack(spacing: 20) {
                 ZStack {
@@ -33,12 +37,12 @@ struct ContentView: View {
                 }
                 HStack {
                     Button {
-                        handleAddPhotoTapped()
+                        handleAddPhotoTapped(using: sources)
                     } label: {
-                        Label(addPhotoButtonLabel, systemImage: addPhotoButtonSystemImage)
+                        Label(addPhotoButtonLabel(from: sources), systemImage: addPhotoButtonSystemImage(from: sources))
                     }
                     .buttonStyle(.borderedProminent)
-
+                    
                     Button {
                         guard image != nil else { return }
                         if MFMailComposeViewController.canSendMail() {
@@ -63,7 +67,6 @@ struct ContentView: View {
             }
         }
         .confirmationDialog("Choose a photo source", isPresented: $showSourceOptions, titleVisibility: .visible) {
-            let sources = availableImageSources
             ForEach(sources) { source in
                 Button(source.label) {
                     presentImagePicker(for: source)
@@ -93,35 +96,31 @@ struct ContentView: View {
         } message: {
             Text("This device doesn't have a camera or photo library available.")
         }
+        .onAppear {
+            refreshAvailableSources()
+        }
+        .onChange(of: scenePhase) { newPhase in
+            if newPhase == .active {
+                refreshAvailableSources()
+            }
+        }
     }
 
-    private var addPhotoButtonLabel: String {
-        if availableImageSources.count == 1, let source = availableImageSources.first {
+    private func addPhotoButtonLabel(from sources: [ImageSourceOption]) -> String {
+        if sources.count == 1, let source = sources.first {
             return source.primaryActionLabel
         }
         return "Add Photo"
     }
 
-    private var addPhotoButtonSystemImage: String {
-        if availableImageSources.count == 1, let source = availableImageSources.first {
+    private func addPhotoButtonSystemImage(from sources: [ImageSourceOption]) -> String {
+        if sources.count == 1, let source = sources.first {
             return source.systemImageName
         }
         return "plus"
     }
 
-    private var availableImageSources: [ImageSourceOption] {
-        var options: [ImageSourceOption] = []
-        if UIImagePickerController.isSourceTypeAvailable(.camera) {
-            options.append(.camera)
-        }
-        if UIImagePickerController.isSourceTypeAvailable(.photoLibrary) {
-            options.append(.photoLibrary)
-        }
-        return options
-    }
-
-    private func handleAddPhotoTapped() {
-        let sources = availableImageSources
+    private func handleAddPhotoTapped(using sources: [ImageSourceOption]) {
         guard !sources.isEmpty else {
             imageSourceUnavailableAlert = true
             return
@@ -137,6 +136,10 @@ struct ContentView: View {
     private func presentImagePicker(for source: ImageSourceOption) {
         imagePickerSource = source.sourceType
         showImagePicker = true
+    }
+
+    private func refreshAvailableSources() {
+        availableSources = ImageSourceOption.currentlyAvailable()
     }
 }
 
@@ -180,6 +183,17 @@ private enum ImageSourceOption: String, CaseIterable, Identifiable {
         case .photoLibrary:
             return .photoLibrary
         }
+    }
+
+    static func currentlyAvailable() -> [ImageSourceOption] {
+        var options: [ImageSourceOption] = []
+        if UIImagePickerController.isSourceTypeAvailable(.camera) {
+            options.append(.camera)
+        }
+        if UIImagePickerController.isSourceTypeAvailable(.photoLibrary) {
+            options.append(.photoLibrary)
+        }
+        return options
     }
 }
 
