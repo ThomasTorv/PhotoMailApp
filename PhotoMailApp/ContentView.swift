@@ -18,6 +18,8 @@ struct ContentView: View {
     private let defaultBody = "Photo attached."
 
     var body: some View {
+        let sources = availableSources
+
         NavigationView {
             VStack(spacing: 20) {
                 ZStack {
@@ -40,7 +42,7 @@ struct ContentView: View {
                         Label(addPhotoButtonLabel(), systemImage: addPhotoButtonSystemImage())
                     }
                     .buttonStyle(.borderedProminent)
-
+                    
                     Button {
                         guard image != nil else { return }
                         if MFMailComposeViewController.canSendMail() {
