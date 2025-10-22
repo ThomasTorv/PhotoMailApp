@@ -37,9 +37,9 @@ struct ContentView: View {
                 }
                 HStack {
                     Button {
-                        handleAddPhotoTapped(using: sources)
+                        handleAddPhotoTapped()
                     } label: {
-                        Label(addPhotoButtonLabel(from: sources), systemImage: addPhotoButtonSystemImage(from: sources))
+                        Label(addPhotoButtonLabel(), systemImage: addPhotoButtonSystemImage())
                     }
                     .buttonStyle(.borderedProminent)
                     
@@ -67,7 +67,7 @@ struct ContentView: View {
             }
         }
         .confirmationDialog("Choose a photo source", isPresented: $showSourceOptions, titleVisibility: .visible) {
-            ForEach(sources) { source in
+            ForEach(availableSources) { source in
                 Button(source.label) {
                     presentImagePicker(for: source)
                 }
@@ -106,21 +106,24 @@ struct ContentView: View {
         }
     }
 
-    private func addPhotoButtonLabel(from sources: [ImageSourceOption]) -> String {
-        if sources.count == 1, let source = sources.first {
+    private func addPhotoButtonLabel() -> String {
+        if availableSources.count == 1, let source = availableSources.first {
             return source.primaryActionLabel
         }
         return "Add Photo"
     }
 
-    private func addPhotoButtonSystemImage(from sources: [ImageSourceOption]) -> String {
-        if sources.count == 1, let source = sources.first {
+    private func addPhotoButtonSystemImage() -> String {
+        if availableSources.count == 1, let source = availableSources.first {
             return source.systemImageName
         }
         return "plus"
     }
 
-    private func handleAddPhotoTapped(using sources: [ImageSourceOption]) {
+    private func handleAddPhotoTapped() {
+        let sources = ImageSourceOption.currentlyAvailable()
+        availableSources = sources
+
         guard !sources.isEmpty else {
             imageSourceUnavailableAlert = true
             return
