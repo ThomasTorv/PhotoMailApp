@@ -29,11 +29,13 @@
 		<key>UIApplicationSupportsMultipleScenes</key>
 		<false/>
 	</dict>
-	<key>UISupportedInterfaceOrientations</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-	</array>
-	<key>NSCameraUsageDescription</key>
-	<string>Need camera to take shipment photos.</string>
+<key>UISupportedInterfaceOrientations</key>
+<array>
+<string>UIInterfaceOrientationPortrait</string>
+</array>
+<key>NSCameraUsageDescription</key>
+<string>Need camera to take shipment photos.</string>
+<key>NSPhotoLibraryAddUsageDescription</key>
+<string>Need photo library access to save shipment photos.</string>
 </dict>
 </plist>
